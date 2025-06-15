@@ -12,5 +12,8 @@ namespace DAL.Interfaces
         Task<User> GetByIdAsync(Guid userId);
         Task<User> GetByEmailAsync(string email);
         Task UpdateAsync(User user);
+        Task<User> AddAsync(User user);
+        Task<bool> UpdatePasswordAsync(Guid userId, string newPasswordHash);
+
     }
 }
