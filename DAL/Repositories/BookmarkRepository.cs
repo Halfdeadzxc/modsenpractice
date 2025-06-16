@@ -42,5 +42,17 @@ namespace DAL.Repositories
                                            .Select(b => b.Post)
                                            .ToListAsync();
         }
+
+        public async Task<Bookmark> GetBookmarkAsync(Guid userId, Guid postId)
+        {
+            return await _context.Bookmarks
+                .FirstOrDefaultAsync(b => b.UserId == userId && b.PostId == postId);
+        }
+
+        public async Task<bool> ExistsAsync(Guid userId, Guid postId)
+        {
+            return await _context.Bookmarks
+                .AnyAsync(b => b.UserId == userId && b.PostId == postId);
+        }
     }
 }

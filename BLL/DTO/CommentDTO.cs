@@ -4,17 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DAL.Models
+namespace BLL.DTO
 {
-    public class Comment
+    public class CommentDTO
     {
         public Guid Id { get; set; }
         public Guid PostId { get; set; }
         public Guid AuthorId { get; set; }
-        public Guid? ParentCommentId { get; set; }
         public string Content { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public User Author { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public List<CommentDTO> Replies { get; set; } = new();
 
+        public CommentDTO Parent { get; set; }
     }
 }

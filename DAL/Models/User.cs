@@ -16,5 +16,9 @@ namespace DAL.Models
         public string Bio { get; set; }
         public bool IsPrivate { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string? PasswordResetToken { get; set; }
+        public DateTime? ResetTokenExpires { get; set; }
+        public string RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiry { get; set; }
     }
 }

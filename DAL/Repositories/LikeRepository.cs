@@ -42,5 +42,17 @@ namespace DAL.Repositories
                                        .Select(l => l.User)
                                        .ToListAsync();
         }
+
+        public async Task<Like> GetLikeAsync(Guid userId, Guid postId)
+        {
+            return await _context.Likes
+                .FirstOrDefaultAsync(l => l.UserId == userId && l.PostId == postId);
+        }
+
+        public async Task<bool> ExistsAsync(Guid userId, Guid postId)
+        {
+            return await _context.Likes
+                .AnyAsync(l => l.UserId == userId && l.PostId == postId);
+        }
     }
 }
