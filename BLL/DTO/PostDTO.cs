@@ -20,5 +20,8 @@ namespace BLL.DTO
         public bool IsLiked { get; set; }
         public bool IsBookmarked { get; set; }
         public bool IsReposted { get; set; }
+
+        public int CommentCount { get; set; }
+        public int BookmarkCount { get; set; }
     }
 }
