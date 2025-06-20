@@ -17,11 +17,10 @@ namespace BLL.Validators
                 .MaximumLength(280).WithMessage("Post cannot exceed 280 characters");
 
             RuleFor(x => x.MediaUrls)
-                .Must(urls => urls.Count <= 4).WithMessage("Maximum 4 media attachments allowed")
-                .ForEach(url =>
-                    url.Must(uri => Uri.TryCreate(uri, UriKind.Absolute, out _))
-                    .When(url => !string.IsNullOrEmpty(url))
-                    .WithMessage("Invalid media URL format"));
+                .Must(urls => urls.Count <= 4)
+                .WithMessage("Maximum 4 media attachments allowed")
+                .When(x => x.MediaUrls != null);
+
 
             RuleFor(x => x.Hashtags)
                 .MaximumLength(100).WithMessage("Hashtags too long");

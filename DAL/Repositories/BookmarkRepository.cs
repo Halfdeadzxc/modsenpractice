@@ -29,7 +29,7 @@ namespace DAL.Repositories
         public async Task<bool> RemoveBookmarkAsync(Guid userId, Guid postId)
         {
             var bookmark = await _context.Bookmarks.FirstOrDefaultAsync(b => b.UserId == userId && b.PostId == postId);
-            if (bookmark == null) return false;
+            if (bookmark is null) return false;
 
             _context.Bookmarks.Remove(bookmark);
             await _context.SaveChangesAsync();

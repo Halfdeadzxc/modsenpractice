@@ -28,7 +28,7 @@ namespace DAL.Repositories
         public async Task<bool> DeleteCommentAsync(Guid commentId)
         {
             var comment = await _context.Comments.FindAsync(commentId);
-            if (comment == null) return false;
+            if (comment is null) return false;
 
             _context.Comments.Remove(comment);
             await _context.SaveChangesAsync();
