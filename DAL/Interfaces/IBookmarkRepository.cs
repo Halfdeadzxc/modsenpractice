@@ -12,5 +12,7 @@ namespace DAL.Interfaces
         Task<bool> AddBookmarkAsync(Guid userId, Guid postId);
         Task<bool> RemoveBookmarkAsync(Guid userId, Guid postId);
         Task<IEnumerable<Post>> GetBookmarksAsync(Guid userId);
+        Task<Bookmark> GetBookmarkAsync(Guid userId, Guid postId);
+        Task<bool> ExistsAsync(Guid userId, Guid postId);
     }
 }

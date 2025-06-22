@@ -20,7 +20,10 @@ namespace DAL.Repositories
 
         public async Task<IEnumerable<Post>> GetFeedAsync(Guid userId, int page, int pageSize, string filter)
         {
-            var query = _context.Posts.AsQueryable();
+            var query = _context.Posts
+                .Include(p => p.Author)
+                .AsNoTracking()
+                .AsQueryable();
 
             if (filter == "subscriptions")
             {
@@ -34,7 +37,9 @@ namespace DAL.Repositories
 
             else if (filter == "popular")
             {
-                query = query.OrderByDescending(p => p.LikeCount);
+                query = query
+                    .Where(p => p.CreatedAt > DateTime.UtcNow.AddDays(-7))
+                    .OrderByDescending(p => p.LikeCount + p.CommentCount * 2);
             }
 
             else

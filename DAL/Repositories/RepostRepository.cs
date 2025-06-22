@@ -32,5 +32,17 @@ namespace DAL.Repositories
                                          .Select(r => r.Post)
                                          .ToListAsync();
         }
+
+        public async Task<Repost> GetRepostAsync(Guid userId, Guid postId)
+        {
+            return await _context.Reposts
+                .FirstOrDefaultAsync(r => r.UserId == userId && r.PostId == postId);
+        }
+
+        public async Task<bool> ExistsAsync(Guid userId, Guid postId)
+        {
+            return await _context.Reposts
+                .AnyAsync(r => r.UserId == userId && r.PostId == postId);
+        }
     }
 }

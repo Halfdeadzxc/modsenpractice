@@ -12,5 +12,6 @@ namespace DAL.Interfaces
         Task<Comment> AddCommentAsync(Comment comment);
         Task<bool> DeleteCommentAsync(Guid commentId);
         Task<IEnumerable<Comment>> GetCommentsByPostAsync(Guid postId);
+        Task<Comment> GetByIdAsync(Guid commentId);
     }
 }

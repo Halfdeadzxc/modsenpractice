@@ -12,5 +12,7 @@ namespace DAL.Interfaces
         Task<bool> AddLikeAsync(Guid userId, Guid postId);
         Task<bool> RemoveLikeAsync(Guid userId, Guid postId);
         Task<IEnumerable<User>> GetLikesAsync(Guid postId);
+        Task<Like> GetLikeAsync(Guid userId, Guid postId);
+        Task<bool> ExistsAsync(Guid userId, Guid postId);
     }
 }

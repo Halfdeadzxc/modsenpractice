@@ -50,5 +50,11 @@ namespace DAL.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<User> GetByRefreshTokenAsync(string refreshToken)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+        }
     }
 }

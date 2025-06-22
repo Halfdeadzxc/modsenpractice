@@ -49,5 +49,13 @@ namespace DAL.Repositories
                                                .Select(s => s.Following)
                                                .ToListAsync();
         }
+
+        public async Task<Subscription> GetSubscriptionAsync(Guid followerId, Guid followingId)
+        {
+            return await _context.Subscriptions
+                .FirstOrDefaultAsync(s =>
+                    s.FollowerId == followerId &&
+                    s.FollowingId == followingId);
+        }
     }
 }

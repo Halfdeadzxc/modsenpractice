@@ -14,5 +14,7 @@ namespace DAL.Models
         public Guid? ParentCommentId { get; set; }
         public string Content { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public User Author { get; set; }
+
     }
 }

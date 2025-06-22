@@ -13,5 +13,7 @@ namespace DAL.Interfaces
         Task<bool> UnsubscribeAsync(Guid followerId, Guid followingId);
         Task<IEnumerable<User>> GetFollowersAsync(Guid userId);
         Task<IEnumerable<User>> GetFollowingAsync(Guid userId);
+
+        Task<Subscription> GetSubscriptionAsync(Guid followerId, Guid followingId);
     }
 }

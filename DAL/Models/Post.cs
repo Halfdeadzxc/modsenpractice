@@ -17,6 +17,9 @@ namespace DAL.Models
         public int RepostCount { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public User Author { get; set; }
+        public int CommentCount { get; set; }
+        public int BookmarkCount { get; set; }
 
     }
 }

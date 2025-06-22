@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  modsenpractice:
+    build:
+      context: .
+      dockerfile: modsenpractice/Dockerfile
+    ports:
+      - "8080:8080"
+    container_name: modsenpractice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - db
+    networks:
+      - custom_bridge
+
+  db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+      POSTGRES_DB: modsenpractice
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    container_name: db_postgresql_container
+    networks:
+      - custom_bridge
+
+volumes:
+  db_data:
+
+networks:
+  custom_bridge:
+    driver: bridge

@@ -28,7 +28,7 @@ namespace DAL.Repositories
         public async Task<bool> DeleteCommentAsync(Guid commentId)
         {
             var comment = await _context.Comments.FindAsync(commentId);
-            if (comment == null) return false;
+            if (comment is null) return false;
 
             _context.Comments.Remove(comment);
             await _context.SaveChangesAsync();
@@ -37,7 +37,17 @@ namespace DAL.Repositories
 
         public async Task<IEnumerable<Comment>> GetCommentsByPostAsync(Guid postId)
         {
-            return await _context.Comments.Where(c => c.PostId == postId).ToListAsync();
+            return await _context.Comments
+                .Where(c => c.PostId == postId)
+                .Include(c => c.Author)
+                .ToListAsync();
+        }
+
+        public async Task<Comment> GetByIdAsync(Guid commentId)
+        {
+            return await _context.Comments
+                .Include(c => c.Author)
+                .FirstOrDefaultAsync(c => c.Id == commentId);
         }
     }
 }
