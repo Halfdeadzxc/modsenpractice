@@ -18,36 +18,43 @@ namespace DAL.Repositories
             _context = context;
         }
 
-        public async Task<Comment> AddCommentAsync(Comment comment)
+        public async Task<Comment> AddAsync(Comment comment, CancellationToken cancellationToken = default)
         {
-            _context.Comments.Add(comment);
-            await _context.SaveChangesAsync();
+            await _context.Comments.AddAsync(comment, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
             return comment;
         }
 
-        public async Task<bool> DeleteCommentAsync(Guid commentId)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var comment = await _context.Comments.FindAsync(commentId);
-            if (comment is null) return false;
-
-            _context.Comments.Remove(comment);
-            await _context.SaveChangesAsync();
-            return true;
+            var comment = await _context.Comments.FindAsync(new object[] { id }, cancellationToken);
+            if (comment is not null)
+            {
+                _context.Comments.Remove(comment);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
         }
 
-        public async Task<IEnumerable<Comment>> GetCommentsByPostAsync(Guid postId)
+        public async Task<IEnumerable<Comment>> GetCommentsByPostAsync(Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Comments
                 .Where(c => c.PostId == postId)
                 .Include(c => c.Author)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<Comment> GetByIdAsync(Guid commentId)
+        public async Task<Comment> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.Comments
                 .Include(c => c.Author)
-                .FirstOrDefaultAsync(c => c.Id == commentId);
+                .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        }
+
+        public async Task<Comment> UpdateAsync(Comment comment, CancellationToken cancellationToken = default)
+        {
+            _context.Comments.Update(comment);
+            await _context.SaveChangesAsync(cancellationToken);
+            return comment;
         }
     }
 }

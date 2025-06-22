@@ -7,11 +7,9 @@ using System.Threading.Tasks;
 
 namespace DAL.Interfaces
 {
-    public interface ICommentRepository
+    public interface ICommentRepository : IRepository<Comment>
     {
-        Task<Comment> AddCommentAsync(Comment comment);
-        Task<bool> DeleteCommentAsync(Guid commentId);
-        Task<IEnumerable<Comment>> GetCommentsByPostAsync(Guid postId);
-        Task<Comment> GetByIdAsync(Guid commentId);
+        Task<IEnumerable<Comment>> GetCommentsByPostAsync(Guid postId, CancellationToken cancellationToken = default);
     }
 }
+

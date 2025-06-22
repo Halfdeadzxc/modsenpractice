@@ -13,6 +13,7 @@ namespace BLL.Interfaces
             Guid userId,
             int page = 1,
             int pageSize = 10,
-            string filter = "recent");
+            string filter = "recent", 
+            CancellationToken cancellationToken = default);
     }
 }

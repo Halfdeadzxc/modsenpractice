@@ -37,28 +37,42 @@ namespace BLL.Services
             _mapper = mapper;
         }
 
-        public async Task AddBookmarkAsync(Guid userId, Guid postId)
+        public async Task AddBookmarkAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
-            var exists = await _bookmarkRepo.GetBookmarkAsync(userId, postId);
+            var exists = await _bookmarkRepo.GetByIdAsync(userId, postId, cancellationToken);
             if (exists != null) return;
 
-            await _bookmarkRepo.AddBookmarkAsync(userId, postId);
-            await _postRepo.IncrementBookmarkCountAsync(postId);
+            var bookmark = new Bookmark { UserId = userId, PostId = postId };
+            await _bookmarkRepo.AddAsync(bookmark, cancellationToken);
+
+            var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
+            if (post != null)
+            {
+                post.BookmarkCount++;
+                await _postRepo.UpdateAsync(post, cancellationToken);
+            }
         }
 
-        public async Task RemoveBookmarkAsync(Guid userId, Guid postId)
+        public async Task RemoveBookmarkAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
-            await _bookmarkRepo.RemoveBookmarkAsync(userId, postId);
-            await _postRepo.DecrementBookmarkCountAsync(postId);
+            await _bookmarkRepo.DeleteAsync(userId, postId, cancellationToken);
+
+            var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
+            if (post != null && post.BookmarkCount > 0)
+            {
+                post.BookmarkCount--;
+                await _postRepo.UpdateAsync(post, cancellationToken);
+            }
         }
 
-        public async Task<IEnumerable<PostDTO>> GetBookmarksAsync(Guid userId)
+
+        public async Task<IEnumerable<PostDTO>> GetBookmarksAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var bookmarks = await _bookmarkRepo.GetBookmarksAsync(userId);
+            var bookmarks = await _bookmarkRepo.GetBookmarksAsync(userId, cancellationToken);
             return _mapper.Map<IEnumerable<PostDTO>>(bookmarks);
         }
 
-        public async Task<CommentDTO> AddCommentAsync(CommentCreateDTO dto, Guid authorId)
+        public async Task<CommentDTO> AddCommentAsync(CommentCreateDTO dto, Guid authorId, CancellationToken cancellationToken = default)
         {
             var comment = new Comment
             {
@@ -68,89 +82,138 @@ namespace BLL.Services
                 Content = dto.Content
             };
 
-            var created = await _commentRepo.AddCommentAsync(comment);
-            await _postRepo.IncrementCommentCountAsync(dto.PostId);
+            var created = await _commentRepo.AddAsync(comment, cancellationToken);
+
+            var post = await _postRepo.GetByIdAsync(dto.PostId, cancellationToken);
+            if (post != null)
+            {
+                post.CommentCount++;
+                await _postRepo.UpdateAsync(post, cancellationToken);
+            }
+
             return _mapper.Map<CommentDTO>(created);
         }
 
-        public async Task DeleteCommentAsync(Guid commentId, Guid authorId)
+        public async Task DeleteCommentAsync(Guid commentId, Guid authorId, CancellationToken cancellationToken = default)
         {
-            var comment = await _commentRepo.GetByIdAsync(commentId);
+            var comment = await _commentRepo.GetByIdAsync(commentId, cancellationToken);
             if (comment == null) return;
             if (comment.AuthorId != authorId)
                 throw new UnauthorizedAccessException();
 
-            await _commentRepo.DeleteCommentAsync(commentId);
-            await _postRepo.DecrementCommentCountAsync(comment.PostId);
+            await _commentRepo.DeleteAsync(commentId, cancellationToken);
+
+            var post = await _postRepo.GetByIdAsync(comment.PostId, cancellationToken);
+            if (post != null && post.CommentCount > 0)
+            {
+                post.CommentCount--;
+                await _postRepo.UpdateAsync(post, cancellationToken);
+            }
         }
 
-        public async Task<IEnumerable<CommentDTO>> GetCommentsByPostAsync(Guid postId)
+
+        public async Task<IEnumerable<CommentDTO>> GetCommentsByPostAsync(Guid postId, CancellationToken cancellationToken = default)
         {
-            var comments = await _commentRepo.GetCommentsByPostAsync(postId);
+            var comments = await _commentRepo.GetCommentsByPostAsync(postId, cancellationToken);
             return BuildCommentTree(comments);
         }
 
-        public async Task AddLikeAsync(Guid userId, Guid postId)
+        public async Task AddLikeAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
-            var exists = await _likeRepo.GetLikeAsync(userId, postId);
+            var exists = await _likeRepo.GetByIdAsync(userId, postId, cancellationToken);
             if (exists != null) return;
 
-            await _likeRepo.AddLikeAsync(userId, postId);
-            await _postRepo.IncrementLikeCountAsync(postId);
+            var like = new Like { UserId = userId, PostId = postId };
+            await _likeRepo.AddAsync(like, cancellationToken);
+
+            var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
+            if (post != null)
+            {
+                post.LikeCount++;
+                await _postRepo.UpdateAsync(post, cancellationToken);
+            }
         }
 
-        public async Task RemoveLikeAsync(Guid userId, Guid postId)
+
+        public async Task RemoveLikeAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
-            await _likeRepo.RemoveLikeAsync(userId, postId);
-            await _postRepo.DecrementLikeCountAsync(postId);
+            await _likeRepo.DeleteAsync(userId, postId, cancellationToken);
+
+            var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
+            if (post != null && post.LikeCount > 0)
+            {
+                post.LikeCount--;
+                await _postRepo.UpdateAsync(post, cancellationToken);
+            }
         }
 
-        public async Task<IEnumerable<UserProfileDTO>> GetLikesAsync(Guid postId)
+        public async Task<IEnumerable<UserProfileDTO>> GetLikesAsync(Guid postId, CancellationToken cancellationToken = default)
         {
-            var users = await _likeRepo.GetLikesAsync(postId);
+            var users = await _likeRepo.GetLikesAsync(postId, cancellationToken);
             return _mapper.Map<IEnumerable<UserProfileDTO>>(users);
         }
 
-        public async Task AddRepostAsync(Guid userId, RepostCreateDTO dto)
+        public async Task AddRepostAsync(Guid userId, RepostCreateDTO dto, CancellationToken cancellationToken = default)
         {
-            var exists = await _repostRepo.GetRepostAsync(userId, dto.PostId);
+            var exists = await _repostRepo.GetByIdAsync(userId, dto.PostId, cancellationToken);
             if (exists != null) return;
 
-            await _repostRepo.AddRepostAsync(userId, dto.PostId, dto.Comment);
-            await _postRepo.IncrementRepostCountAsync(dto.PostId);
+            var repost = new Repost
+            {
+                UserId = userId,
+                PostId = dto.PostId,
+                Comment = dto.Comment
+            };
+
+            await _repostRepo.AddAsync(repost, cancellationToken);
+
+            var post = await _postRepo.GetByIdAsync(dto.PostId, cancellationToken);
+            if (post != null)
+            {
+                post.RepostCount++;
+                await _postRepo.UpdateAsync(post, cancellationToken);
+            }
         }
 
-        public async Task<IEnumerable<PostDTO>> GetRepostsAsync(Guid postId)
+
+        public async Task<IEnumerable<PostDTO>> GetRepostsAsync(Guid postId, CancellationToken cancellationToken = default)
         {
-            var reposts = await _repostRepo.GetRepostsAsync(postId);
+            var reposts = await _repostRepo.GetRepostsAsync(postId, cancellationToken);
             return _mapper.Map<IEnumerable<PostDTO>>(reposts);
         }
 
-        public async Task SubscribeAsync(Guid followerId, Guid followingId)
+        public async Task SubscribeAsync(Guid followerId, Guid followingId, CancellationToken cancellationToken = default)
         {
             if (followerId == followingId)
                 throw new ArgumentException("Cannot subscribe to yourself");
 
-            var exists = await _subscriptionRepo.GetSubscriptionAsync(followerId, followingId);
+            var exists = await _subscriptionRepo.GetByIdAsync(followerId, followingId, cancellationToken);
             if (exists != null) return;
 
-            await _subscriptionRepo.SubscribeAsync(followerId, followingId);
+            var subscription = new Subscription
+            {
+                FollowerId = followerId,
+                FollowingId = followingId,
+                Status = "approved"
+            };
+
+            await _subscriptionRepo.AddAsync(subscription, cancellationToken);
         }
 
-        public async Task UnsubscribeAsync(Guid followerId, Guid followingId)
+        public async Task UnsubscribeAsync(Guid followerId, Guid followingId, CancellationToken cancellationToken = default)
         {
-            await _subscriptionRepo.UnsubscribeAsync(followerId, followingId);
+            await _subscriptionRepo.DeleteAsync(followerId, followingId, cancellationToken);
         }
 
-        public async Task<IEnumerable<UserProfileDTO>> GetFollowersAsync(Guid userId)
+        public async Task<IEnumerable<UserProfileDTO>> GetFollowersAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var users = await _subscriptionRepo.GetFollowersAsync(userId);
+            var users = await _subscriptionRepo.GetFollowersAsync(userId, cancellationToken);
             return _mapper.Map<IEnumerable<UserProfileDTO>>(users);
         }
 
-        public async Task<IEnumerable<UserProfileDTO>> GetFollowingAsync(Guid userId)
+        public async Task<IEnumerable<UserProfileDTO>> GetFollowingAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var users = await _subscriptionRepo.GetFollowingAsync(userId);
+            var users = await _subscriptionRepo.GetFollowingAsync(userId, cancellationToken);
             return _mapper.Map<IEnumerable<UserProfileDTO>>(users);
         }
 

@@ -9,11 +9,11 @@ namespace BLL.Interfaces
 {
     public interface IPostService
     {
-        Task<PostDTO> CreatePostAsync(Guid authorId, PostCreateDTO postDto);
-        Task<PostDTO> UpdatePostAsync(Guid postId, Guid userId, PostCreateDTO postDto);
-        Task DeletePostAsync(Guid postId, Guid userId);
-        Task<PostDTO> GetPostByIdAsync(Guid postId);
-        Task<IEnumerable<PostDTO>> GetPostsByUserAsync(Guid userId);
-        Task<IEnumerable<PostDTO>> GetPostsByHashtagAsync(string hashtag);
+        Task<PostDTO> CreatePostAsync(Guid authorId, PostCreateDTO dto, CancellationToken cancellationToken = default);
+        Task<PostDTO> UpdatePostAsync(Guid postId, Guid userId, PostCreateDTO dto, CancellationToken cancellationToken = default);
+        Task DeletePostAsync(Guid postId, Guid userId, CancellationToken cancellationToken = default);
+        Task<PostDTO> GetPostByIdAsync(Guid postId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<PostDTO>> GetPostsByUserAsync(Guid userId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<PostDTO>> GetPostsByHashtagAsync(string hashtag, CancellationToken cancellationToken = default);
     }
 }

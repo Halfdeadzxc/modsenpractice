@@ -3,6 +3,7 @@ using BLL.DTO;
 using BLL.Interfaces;
 using DAL.Interfaces;
 using DAL.Models;
+using System.Threading;
 
 namespace BLL.Services
 {
@@ -12,6 +13,7 @@ namespace BLL.Services
         private readonly ILikeRepository _likeRepo;
         private readonly IBookmarkRepository _bookmarkRepo;
         private readonly IRepostRepository _repostRepo;
+        private readonly ISubscriptionRepository _subscriptionRepo;
         private readonly IMapper _mapper;
 
         public FeedService(
@@ -19,23 +21,38 @@ namespace BLL.Services
             ILikeRepository likeRepo,
             IBookmarkRepository bookmarkRepo,
             IRepostRepository repostRepo,
+            ISubscriptionRepository subscriptionRepo,
             IMapper mapper)
         {
             _feedRepo = feedRepo;
             _likeRepo = likeRepo;
             _bookmarkRepo = bookmarkRepo;
             _repostRepo = repostRepo;
+            _subscriptionRepo = subscriptionRepo;
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<PostDTO>> GetFeedAsync(
-            Guid userId,
-            int page = 1,
-            int pageSize = 10,
-            string filter = "recent")
+        public async Task<IEnumerable<PostDTO>> GetFeedAsync(Guid userId, int page = 1, int pageSize = 10, string filter = "recent", CancellationToken cancellationToken = default)
         {
-            var posts = await _feedRepo.GetFeedAsync(userId, page, pageSize, filter);
-            var postDtos = _mapper.Map<IEnumerable<PostDTO>>(posts);
+            IEnumerable<Post> posts;
+
+            if (filter == "subscriptions")
+            {
+                var followingUsers = await _subscriptionRepo.GetFollowingAsync(userId, cancellationToken);
+                var followingIds = followingUsers.Select(u => u.Id);
+                posts = await _feedRepo.GetPostsByAuthorsAsync(followingIds, page, pageSize);
+            }
+            else if (filter == "popular")
+            {
+                var since = DateTime.UtcNow.AddDays(-7);
+                posts = await _feedRepo.GetPopularPostsAsync(since, page, pageSize);
+            }
+            else
+            {
+                posts = await _feedRepo.GetRecentPostsAsync(page, pageSize);
+            }
+
+            var postDtos = _mapper.Map<List<PostDTO>>(posts);
 
             foreach (var post in postDtos)
             {

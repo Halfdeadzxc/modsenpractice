@@ -18,39 +18,39 @@ namespace DAL.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Post>> GetFeedAsync(Guid userId, int page, int pageSize, string filter)
+        public async Task<IEnumerable<Post>> GetPostsByAuthorsAsync(IEnumerable<Guid> authorIds, int page, int pageSize, CancellationToken cancellationToken = default)
         {
-            var query = _context.Posts
+            return await _context.Posts
                 .Include(p => p.Author)
-                .AsNoTracking()
-                .AsQueryable();
-
-            if (filter == "subscriptions")
-            {
-                var followingIds = await _context.Subscriptions
-                    .Where(s => s.FollowerId == userId)
-                    .Select(s => s.FollowingId)
-                    .ToListAsync();
-
-                query = query.Where(p => followingIds.Contains(p.AuthorId));
-            }
-
-            else if (filter == "popular")
-            {
-                query = query
-                    .Where(p => p.CreatedAt > DateTime.UtcNow.AddDays(-7))
-                    .OrderByDescending(p => p.LikeCount + p.CommentCount * 2);
-            }
-
-            else
-            {
-                query = query.OrderByDescending(p => p.CreatedAt);
-            }
-
-            return await query
+                .Where(p => authorIds.Contains(p.AuthorId))
+                .OrderByDescending(p => p.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<Post>> GetPopularPostsAsync(DateTime since, int page, int pageSize, CancellationToken cancellationToken = default)
+        {
+            return await _context.Posts
+                .Include(p => p.Author)
+                .Where(p => p.CreatedAt >= since)
+                .OrderByDescending(p => p.LikeCount + p.CommentCount * 2)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<Post>> GetRecentPostsAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+        {
+            return await _context.Posts
+                .Include(p => p.Author)
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
     }
 

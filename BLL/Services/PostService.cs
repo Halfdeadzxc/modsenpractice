@@ -23,19 +23,19 @@ namespace BLL.Services
             _mapper = mapper;
         }
 
-        public async Task<PostDTO> CreatePostAsync(Guid authorId, PostCreateDTO dto)
+        public async Task<PostDTO> CreatePostAsync(Guid authorId, PostCreateDTO dto, CancellationToken cancellationToken = default)
         {
             var post = _mapper.Map<Post>(dto);
             post.AuthorId = authorId;
             post.Hashtags = ExtractHashtags(dto.Content);
 
-            var created = await _postRepo.CreateAsync(post);
+            var created = await _postRepo.AddAsync(post, cancellationToken);
             return _mapper.Map<PostDTO>(created);
         }
 
-        public async Task<PostDTO> UpdatePostAsync(Guid postId, Guid userId, PostCreateDTO dto)
+        public async Task<PostDTO> UpdatePostAsync(Guid postId, Guid userId, PostCreateDTO dto, CancellationToken cancellationToken = default)
         {
-            var post = await _postRepo.GetByIdAsync(postId);
+            var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
             if (post == null) throw new KeyNotFoundException("Post not found");
             if (post.AuthorId != userId) throw new UnauthorizedAccessException();
 
@@ -44,34 +44,34 @@ namespace BLL.Services
             post.Hashtags = ExtractHashtags(dto.Content);
             post.UpdatedAt = DateTime.UtcNow;
 
-            var updated = await _postRepo.UpdateAsync(post);
+            var updated = await _postRepo.UpdateAsync(post, cancellationToken);
             return _mapper.Map<PostDTO>(updated);
         }
 
-        public async Task DeletePostAsync(Guid postId, Guid userId)
+        public async Task DeletePostAsync(Guid postId, Guid userId, CancellationToken cancellationToken = default)
         {
-            var post = await _postRepo.GetByIdAsync(postId);
+            var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
             if (post == null) return;
             if (post.AuthorId != userId) throw new UnauthorizedAccessException();
 
-            await _postRepo.DeleteAsync(postId);
+            await _postRepo.DeleteAsync(postId, cancellationToken);
         }
 
-        public async Task<PostDTO> GetPostByIdAsync(Guid postId)
+        public async Task<PostDTO> GetPostByIdAsync(Guid postId, CancellationToken cancellationToken = default)
         {
-            var post = await _postRepo.GetByIdAsync(postId);
+            var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
             return _mapper.Map<PostDTO>(post);
         }
 
-        public async Task<IEnumerable<PostDTO>> GetPostsByUserAsync(Guid userId)
+        public async Task<IEnumerable<PostDTO>> GetPostsByUserAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var posts = await _postRepo.GetByUserAsync(userId);
+            var posts = await _postRepo.GetByUserAsync(userId, cancellationToken);
             return _mapper.Map<IEnumerable<PostDTO>>(posts);
         }
 
-        public async Task<IEnumerable<PostDTO>> GetPostsByHashtagAsync(string hashtag)
+        public async Task<IEnumerable<PostDTO>> GetPostsByHashtagAsync(string hashtag, CancellationToken cancellationToken = default)
         {
-            var posts = await _postRepo.GetByHashtagAsync(hashtag);
+            var posts = await _postRepo.GetByHashtagAsync(hashtag, cancellationToken);
             return _mapper.Map<IEnumerable<PostDTO>>(posts);
         }
 

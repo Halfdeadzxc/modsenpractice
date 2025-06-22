@@ -9,7 +9,7 @@ namespace BLL.Interfaces
 {
     public interface IUserService
     {
-        Task<UserProfileDTO> GetUserProfileAsync(Guid userId);
-        Task UpdateUserProfileAsync(Guid userId, UserUpdateDTO dto);
+        Task<UserProfileDTO> GetUserProfileAsync(Guid userId, CancellationToken cancellationToken = default);
+        Task UpdateUserProfileAsync(Guid userId, UserUpdateDTO dto, CancellationToken cancellationToken = default);
     }
 }

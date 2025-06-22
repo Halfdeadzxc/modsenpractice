@@ -7,15 +7,11 @@ using System.Threading.Tasks;
 
 namespace DAL.Interfaces
 {
-    public interface IUserRepository
+    public interface IUserRepository : IRepository<User>
     {
-        Task<User> GetByIdAsync(Guid userId);
-        Task<User> GetByEmailAsync(string email);
-        Task UpdateAsync(User user);
-        Task<User> AddAsync(User user);
-        Task<bool> UpdatePasswordAsync(Guid userId, string newPasswordHash);
-        Task<User> GetByRefreshTokenAsync(string refreshToken);
-
+        Task<User> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+        Task<User> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
+        Task<User> UpdatePasswordAsync(Guid userId, string newPasswordHash, CancellationToken cancellationToken = default);
 
     }
 }

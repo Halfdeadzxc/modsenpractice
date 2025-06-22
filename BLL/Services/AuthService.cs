@@ -19,22 +19,25 @@ namespace BLL.Services
         private readonly IConfiguration _config;
         private readonly IEmailService _emailService;
         private readonly IPasswordService _passwordService;
+        private readonly IJwtService _jwtService;
 
         public AuthService(
             IUserRepository userRepo,
             IConfiguration config,
             IEmailService emailService,
-            IPasswordService passwordService)
+            IPasswordService passwordService,
+            IJwtService jwtService)
         {
             _userRepo = userRepo;
             _config = config;
             _emailService = emailService;
             _passwordService = passwordService;
+            _jwtService = jwtService;
         }
 
-        public async Task<TokenResponseDTO> RegisterAsync(RegisterDTO dto)
+        public async Task<TokenResponseDTO> RegisterAsync(RegisterDTO dto, CancellationToken cancellationToken = default)
         {
-            if (await _userRepo.GetByEmailAsync(dto.Email) != null)
+            if (await _userRepo.GetByEmailAsync(dto.Email, cancellationToken) != null)
                 throw new ArgumentException("Email already exists");
 
             var user = new User
@@ -45,46 +48,47 @@ namespace BLL.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _userRepo.AddAsync(user);
-            return await GenerateTokens(user);
+            await _userRepo.AddAsync(user, cancellationToken);
+            return await GenerateTokens(user, cancellationToken);
         }
 
-        public async Task<TokenResponseDTO> LoginAsync(LoginDTO dto)
+        public async Task<TokenResponseDTO> LoginAsync(LoginDTO dto, CancellationToken cancellationToken = default)
         {
-            var user = await _userRepo.GetByEmailAsync(dto.Email);
+            var user = await _userRepo.GetByEmailAsync(dto.Email, cancellationToken);
             if (user == null || !_passwordService.VerifyPassword(dto.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid credentials");
 
-            return await GenerateTokens(user);
+            return await GenerateTokens(user, cancellationToken);
         }
 
-        public async Task<TokenResponseDTO> RefreshTokenAsync(string refreshToken)
+        public async Task<TokenResponseDTO> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
-            var user = await _userRepo.GetByRefreshTokenAsync(refreshToken);
+            var user = await _userRepo.GetByRefreshTokenAsync(refreshToken, cancellationToken);
             if (user == null || user.RefreshTokenExpiry < DateTime.UtcNow)
                 throw new SecurityTokenException("Invalid refresh token");
 
-            return await GenerateTokens(user);
+            return await GenerateTokens(user, cancellationToken);
         }
 
-        public async Task ForgotPasswordAsync(ForgotPasswordDTO dto)
+        public async Task ForgotPasswordAsync(ForgotPasswordDTO dto, CancellationToken cancellationToken = default)
         {
-            var user = await _userRepo.GetByEmailAsync(dto.Email);
+            var user = await _userRepo.GetByEmailAsync(dto.Email, cancellationToken);
             if (user == null) return;
 
-            user.PasswordResetToken = GenerateResetToken();
+            user.PasswordResetToken = _jwtService.GenerateResetToken();
             user.ResetTokenExpires = DateTime.UtcNow.AddHours(1);
-            await _userRepo.UpdateAsync(user);
+            await _userRepo.UpdateAsync(user, cancellationToken);
 
             await _emailService.SendPasswordResetEmailAsync(
                 user.Email,
                 user.Username,
-                user.PasswordResetToken);
+                user.PasswordResetToken,
+                cancellationToken);
         }
 
-        public async Task ResetPasswordAsync(ResetPasswordDTO dto)
+        public async Task ResetPasswordAsync(ResetPasswordDTO dto, CancellationToken cancellationToken = default)
         {
-            var user = await _userRepo.GetByEmailAsync(dto.Email);
+            var user = await _userRepo.GetByEmailAsync(dto.Email, cancellationToken);
             if (user == null ||
                 user.PasswordResetToken != dto.Token ||
                 user.ResetTokenExpires < DateTime.UtcNow)
@@ -93,17 +97,17 @@ namespace BLL.Services
             user.PasswordHash = _passwordService.HashPassword(dto.NewPassword);
             user.PasswordResetToken = null;
             user.ResetTokenExpires = null;
-            await _userRepo.UpdateAsync(user);
+            await _userRepo.UpdateAsync(user, cancellationToken);
         }
 
-        private async Task<TokenResponseDTO> GenerateTokens(User user)
+        private async Task<TokenResponseDTO> GenerateTokens(User user, CancellationToken cancellationToken = default)
         {
-            var accessToken = GenerateJwtToken(user);
-            var refreshToken = GenerateRefreshToken();
+            var accessToken = _jwtService.GenerateAccessToken(user);
+            var refreshToken = _jwtService.GenerateRefreshToken();
 
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
-            await _userRepo.UpdateAsync(user);
+            await _userRepo.UpdateAsync(user, cancellationToken);
 
             return new TokenResponseDTO
             {
@@ -112,44 +116,5 @@ namespace BLL.Services
             };
         }
 
-        private string GenerateJwtToken(User user)
-        {
-            var securityKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-
-            var credentials = new SigningCredentials(
-                securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Name, user.Username)
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(
-                    Convert.ToDouble(_config["Jwt:AccessTokenExpirationMinutes"])),
-                signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private static string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
-        }
-
-        private static string GenerateResetToken()
-        {
-            return Guid.NewGuid().ToString("N");
-        }
     }
 }

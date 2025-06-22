@@ -9,6 +9,9 @@ namespace DAL.Interfaces
 {
     public interface IFeedRepository
     {
-        Task<IEnumerable<Post>> GetFeedAsync(Guid userId, int page, int pageSize, string filter);
+        Task<IEnumerable<Post>> GetPostsByAuthorsAsync(IEnumerable<Guid> authorIds, int page, int pageSize, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Post>> GetPopularPostsAsync(DateTime since, int page, int pageSize, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Post>> GetRecentPostsAsync(int page, int pageSize, CancellationToken cancellationToken = default);
     }
+
 }

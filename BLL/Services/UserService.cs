@@ -17,19 +17,21 @@ namespace BLL.Services
             _mapper = mapper;
         }
 
-        public async Task<UserProfileDTO> GetUserProfileAsync(Guid userId)
+        public async Task<UserProfileDTO> GetUserProfileAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var user = await _userRepo.GetByIdAsync(userId);
+            var user = await _userRepo.GetByIdAsync(userId, cancellationToken);
             return _mapper.Map<UserProfileDTO>(user);
         }
 
-        public async Task UpdateUserProfileAsync(Guid userId, UserUpdateDTO dto)
+        public async Task UpdateUserProfileAsync(Guid userId, UserUpdateDTO dto, CancellationToken cancellationToken = default)
         {
-            var user = await _userRepo.GetByIdAsync(userId);
-            if (user == null) throw new KeyNotFoundException("User not found");
+            var user = await _userRepo.GetByIdAsync(userId, cancellationToken);
+            if (user == null)
+                throw new KeyNotFoundException("User not found");
 
             _mapper.Map(dto, user);
-            await _userRepo.UpdateAsync(user);
+            await _userRepo.UpdateAsync(user, cancellationToken);
         }
     }
+
 }

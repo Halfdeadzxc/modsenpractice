@@ -18,41 +18,43 @@ namespace DAL.Repositories
             _context = context;
         }
 
-        public async Task<bool> AddBookmarkAsync(Guid userId, Guid postId)
+        public async Task<Bookmark> AddAsync(Bookmark bookmark, CancellationToken cancellationToken = default)
         {
-            var bookmark = new Bookmark { UserId = userId, PostId = postId };
-            _context.Bookmarks.Add(bookmark);
-            await _context.SaveChangesAsync();
-            return true;
+            await _context.Bookmarks.AddAsync(bookmark, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            return bookmark;
         }
 
-        public async Task<bool> RemoveBookmarkAsync(Guid userId, Guid postId)
+        public async Task DeleteAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
-            var bookmark = await _context.Bookmarks.FirstOrDefaultAsync(b => b.UserId == userId && b.PostId == postId);
-            if (bookmark is null) return false;
+            var bookmark = await _context.Bookmarks
+                .FirstOrDefaultAsync(b => b.UserId == userId && b.PostId == postId, cancellationToken);
 
-            _context.Bookmarks.Remove(bookmark);
-            await _context.SaveChangesAsync();
-            return true;
+            if (bookmark is not null)
+            {
+                _context.Bookmarks.Remove(bookmark);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
         }
 
-        public async Task<IEnumerable<Post>> GetBookmarksAsync(Guid userId)
-        {
-            return await _context.Bookmarks.Where(b => b.UserId == userId)
-                                           .Select(b => b.Post)
-                                           .ToListAsync();
-        }
-
-        public async Task<Bookmark> GetBookmarkAsync(Guid userId, Guid postId)
+        public async Task<IEnumerable<Post>> GetBookmarksAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             return await _context.Bookmarks
-                .FirstOrDefaultAsync(b => b.UserId == userId && b.PostId == postId);
+                .Where(b => b.UserId == userId)
+                .Select(b => b.Post)
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<bool> ExistsAsync(Guid userId, Guid postId)
+        public async Task<Bookmark> GetByIdAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Bookmarks
-                .AnyAsync(b => b.UserId == userId && b.PostId == postId);
+                .FirstOrDefaultAsync(b => b.UserId == userId && b.PostId == postId, cancellationToken);
+        }
+
+        public async Task<bool> ExistsAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Bookmarks
+                .AnyAsync(b => b.UserId == userId && b.PostId == postId, cancellationToken);
         }
     }
 }

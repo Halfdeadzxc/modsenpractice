@@ -9,10 +9,10 @@ namespace BLL.Interfaces
 {
     public interface IAuthService
     {
-        Task<TokenResponseDTO> RegisterAsync(RegisterDTO dto);
-        Task<TokenResponseDTO> LoginAsync(LoginDTO dto);
-        Task<TokenResponseDTO> RefreshTokenAsync(string refreshToken);
-        Task ForgotPasswordAsync(ForgotPasswordDTO dto);
-        Task ResetPasswordAsync(ResetPasswordDTO dto);
+        Task<TokenResponseDTO> RegisterAsync(RegisterDTO dto, CancellationToken cancellationToken = default);
+        Task<TokenResponseDTO> LoginAsync(LoginDTO dto, CancellationToken cancellationToken = default);
+        Task<TokenResponseDTO> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
+        Task ForgotPasswordAsync(ForgotPasswordDTO dto, CancellationToken cancellationToken = default);
+        Task ResetPasswordAsync(ResetPasswordDTO dto, CancellationToken cancellationToken = default);
     }
 }

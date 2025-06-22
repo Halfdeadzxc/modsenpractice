@@ -22,7 +22,8 @@ namespace BLL.Services
         public async Task SendPasswordResetEmailAsync(
             string email,
             string username,
-            string resetToken)
+            string resetToken,
+            CancellationToken cancellationToken = default)
         {
             var smtpSettings = _config.GetSection("SmtpSettings");
             var client = new SmtpClient(smtpSettings["Host"])
@@ -41,7 +42,7 @@ namespace BLL.Services
                 <p>Please reset your password by clicking the link below:</p>
                 <a href='{resetLink}'>{resetLink}</a>
                 <p>The link will expire in 1 hour.</p>
-            ";
+             ";
 
             var mailMessage = new MailMessage
             {
@@ -52,7 +53,9 @@ namespace BLL.Services
             };
 
             mailMessage.To.Add(email);
+            using var registration = cancellationToken.Register(() => client.Dispose());
             await client.SendMailAsync(mailMessage);
         }
+
     }
 }

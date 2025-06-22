@@ -39,6 +39,7 @@ namespace BLL
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IJwtService, JwtService>();
         }
     }
 }
