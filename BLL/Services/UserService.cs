@@ -27,8 +27,9 @@ namespace BLL.Services
         {
             var user = await _userRepo.GetByIdAsync(userId, cancellationToken);
             if (user is null)
+            {
                 throw new KeyNotFoundException("User not found");
-
+            }
             _mapper.Map(dto, user);
             await _userRepo.UpdateAsync(user, cancellationToken);
         }

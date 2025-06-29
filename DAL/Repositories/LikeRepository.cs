@@ -28,7 +28,6 @@ namespace DAL.Repositories
         public async Task DeleteAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             var like = await _context.Likes
-                .AsNoTracking()
                 .FirstOrDefaultAsync(l => l.UserId == userId && l.PostId == postId, cancellationToken);
 
             if (like is not null)

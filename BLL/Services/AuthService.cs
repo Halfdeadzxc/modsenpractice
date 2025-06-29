@@ -38,7 +38,9 @@ namespace BLL.Services
         public async Task<TokenResponseDTO> RegisterAsync(RegisterDTO dto, CancellationToken cancellationToken = default)
         {
             if (await _userRepo.GetByEmailAsync(dto.Email, cancellationToken) is not null)
+            {
                 throw new ArgumentException("Email already exists");
+            }
 
             var user = new User
             {
@@ -56,7 +58,9 @@ namespace BLL.Services
         {
             var user = await _userRepo.GetByEmailAsync(dto.Email, cancellationToken);
             if (user is null || !_passwordService.VerifyPassword(dto.Password, user.PasswordHash))
+            {
                 throw new UnauthorizedAccessException("Invalid credentials");
+            }
 
             return await GenerateTokens(user, cancellationToken);
         }
@@ -65,7 +69,9 @@ namespace BLL.Services
         {
             var user = await _userRepo.GetByRefreshTokenAsync(refreshToken, cancellationToken);
             if (user is null || user.RefreshTokenExpiry < DateTime.UtcNow)
+            {
                 throw new SecurityTokenException("Invalid refresh token");
+            }
 
             return await GenerateTokens(user, cancellationToken);
         }
@@ -73,7 +79,10 @@ namespace BLL.Services
         public async Task ForgotPasswordAsync(ForgotPasswordDTO dto, CancellationToken cancellationToken = default)
         {
             var user = await _userRepo.GetByEmailAsync(dto.Email, cancellationToken);
-            if (user is null) return;
+            if (user is null)
+            {
+                return;
+            }
 
             user.PasswordResetToken = _jwtService.GenerateResetToken();
             user.ResetTokenExpires = DateTime.UtcNow.AddHours(1);
@@ -92,13 +101,16 @@ namespace BLL.Services
             if (user is null ||
                 user.PasswordResetToken != dto.Token ||
                 user.ResetTokenExpires < DateTime.UtcNow)
+            {
                 throw new ArgumentException("Invalid reset token");
+            }
 
             user.PasswordHash = _passwordService.HashPassword(dto.NewPassword);
             user.PasswordResetToken = null;
             user.ResetTokenExpires = null;
             await _userRepo.UpdateAsync(user, cancellationToken);
         }
+
 
         private async Task<TokenResponseDTO> GenerateTokens(User user, CancellationToken cancellationToken = default)
         {

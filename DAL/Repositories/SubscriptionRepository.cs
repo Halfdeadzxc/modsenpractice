@@ -28,7 +28,6 @@ namespace DAL.Repositories
         public async Task DeleteAsync(Guid followerId, Guid followingId, CancellationToken cancellationToken = default)
         {
             var subscription = await _context.Subscriptions
-                .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.FollowerId == followerId && s.FollowingId == followingId, cancellationToken);
 
             if (subscription is not null)

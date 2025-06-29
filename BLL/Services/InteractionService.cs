@@ -40,7 +40,10 @@ namespace BLL.Services
         public async Task AddBookmarkAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             var exists = await _bookmarkRepo.GetByIdAsync(userId, postId, cancellationToken);
-            if (exists is not null) return;
+            if (exists is not null)
+            {
+                return;
+            }
 
             var bookmark = new Bookmark { UserId = userId, PostId = postId };
             await _bookmarkRepo.AddAsync(bookmark, cancellationToken);
@@ -64,7 +67,6 @@ namespace BLL.Services
                 await _postRepo.UpdateAsync(post, cancellationToken);
             }
         }
-
 
         public async Task<IEnumerable<PostDTO>> GetBookmarksAsync(Guid userId, CancellationToken cancellationToken = default)
         {
@@ -97,9 +99,15 @@ namespace BLL.Services
         public async Task DeleteCommentAsync(Guid commentId, Guid authorId, CancellationToken cancellationToken = default)
         {
             var comment = await _commentRepo.GetByIdAsync(commentId, cancellationToken);
-            if (comment is null) return;
+            if (comment is null)
+            {
+                return;
+            }
+
             if (comment.AuthorId != authorId)
+            {
                 throw new UnauthorizedAccessException();
+            }
 
             await _commentRepo.DeleteAsync(commentId, cancellationToken);
 
@@ -111,7 +119,6 @@ namespace BLL.Services
             }
         }
 
-
         public async Task<IEnumerable<CommentDTO>> GetCommentsByPostAsync(Guid postId, CancellationToken cancellationToken = default)
         {
             var comments = await _commentRepo.GetCommentsByPostAsync(postId, cancellationToken);
@@ -121,7 +128,10 @@ namespace BLL.Services
         public async Task AddLikeAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             var exists = await _likeRepo.GetByIdAsync(userId, postId, cancellationToken);
-            if (exists is not null) return;
+            if (exists is not null)
+            {
+                return;
+            }
 
             var like = new Like { UserId = userId, PostId = postId };
             await _likeRepo.AddAsync(like, cancellationToken);
@@ -133,7 +143,6 @@ namespace BLL.Services
                 await _postRepo.UpdateAsync(post, cancellationToken);
             }
         }
-
 
         public async Task RemoveLikeAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
@@ -156,7 +165,10 @@ namespace BLL.Services
         public async Task AddRepostAsync(Guid userId, RepostCreateDTO dto, CancellationToken cancellationToken = default)
         {
             var exists = await _repostRepo.GetByIdAsync(userId, dto.PostId, cancellationToken);
-            if (exists is not null) return;
+            if (exists is not null)
+            {
+                return;
+            }
 
             var repost = new Repost
             {
@@ -175,7 +187,6 @@ namespace BLL.Services
             }
         }
 
-
         public async Task<IEnumerable<PostDTO>> GetRepostsAsync(Guid postId, CancellationToken cancellationToken = default)
         {
             var reposts = await _repostRepo.GetRepostsAsync(postId, cancellationToken);
@@ -185,10 +196,15 @@ namespace BLL.Services
         public async Task SubscribeAsync(Guid followerId, Guid followingId, CancellationToken cancellationToken = default)
         {
             if (followerId == followingId)
+            {
                 throw new ArgumentException("Cannot subscribe to yourself");
+            }
 
             var exists = await _subscriptionRepo.GetByIdAsync(followerId, followingId, cancellationToken);
-            if (exists is not null) return;
+            if (exists is not null)
+            {
+                return;
+            }
 
             var subscription = new Subscription
             {
@@ -255,12 +271,15 @@ namespace BLL.Services
         private int GetNestedLevel(CommentDTO comment)
         {
             int level = 0;
+
             while (comment.Parent != null)
             {
                 level++;
                 comment = comment.Parent;
             }
+
             return level;
         }
+
     }
 }

@@ -34,7 +34,9 @@ namespace BLL.Services
         {
             var parts = hashedPassword.Split('.');
             if (parts.Length != 5 || parts[0] != "pbkdf2")
+            {
                 return false;
+            }
 
             try
             {
@@ -44,8 +46,9 @@ namespace BLL.Services
                 byte[] originalHash = Convert.FromBase64String(parts[4]);
 
                 if (algorithm != Algorithm.Name.ToLower())
+                {
                     return false;
-
+                }
                 byte[] testHash = Rfc2898DeriveBytes.Pbkdf2(
                     Encoding.UTF8.GetBytes(password),
                     salt,

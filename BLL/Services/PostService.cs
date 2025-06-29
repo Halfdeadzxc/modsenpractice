@@ -38,9 +38,13 @@ namespace BLL.Services
             var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
             if (post is null)
             {
-                throw new KeyNotFoundException("Post not found"); 
+                throw new KeyNotFoundException("Post not found");
             }
-            if (post.AuthorId != userId) throw new UnauthorizedAccessException();
+
+            if (post.AuthorId != userId)
+            {
+                throw new UnauthorizedAccessException();
+            }
 
             post.Content = dto.Content;
             post.MediaUrls = dto.MediaUrls;
@@ -54,8 +58,15 @@ namespace BLL.Services
         public async Task DeletePostAsync(Guid postId, Guid userId, CancellationToken cancellationToken = default)
         {
             var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
-            if (post is null) return;
-            if (post.AuthorId != userId) throw new UnauthorizedAccessException();
+            if (post is null)
+            {
+                return;
+            }
+
+            if (post.AuthorId != userId)
+            {
+                throw new UnauthorizedAccessException();
+            }
 
             await _postRepo.DeleteAsync(postId, cancellationToken);
         }
@@ -80,7 +91,10 @@ namespace BLL.Services
 
         private static string ExtractHashtags(string content)
         {
-            if (string.IsNullOrEmpty(content)) return string.Empty;
+            if (string.IsNullOrEmpty(content))
+            {
+                return string.Empty;
+            }
 
             var matches = Regex.Matches(content, @"#\w+")
                 .Select(m => m.Value.ToLower())

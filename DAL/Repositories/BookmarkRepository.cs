@@ -28,7 +28,6 @@ namespace DAL.Repositories
         public async Task DeleteAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             var bookmark = await _context.Bookmarks
-                .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.UserId == userId && b.PostId == postId, cancellationToken);
 
             if (bookmark is not null)
