@@ -28,9 +28,10 @@ namespace DAL.Repositories
         public async Task DeleteAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             var like = await _context.Likes
+                .AsNoTracking()
                 .FirstOrDefaultAsync(l => l.UserId == userId && l.PostId == postId, cancellationToken);
 
-            if (like != null)
+            if (like is not null)
             {
                 _context.Likes.Remove(like);
                 await _context.SaveChangesAsync(cancellationToken);
@@ -40,6 +41,7 @@ namespace DAL.Repositories
         public async Task<IEnumerable<User>> GetLikesAsync(Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Likes
+                .AsNoTracking()
                 .Where(l => l.PostId == postId)
                 .Select(l => l.User)
                 .ToListAsync(cancellationToken);
@@ -48,13 +50,16 @@ namespace DAL.Repositories
         public async Task<Like> GetByIdAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Likes
+                .AsNoTracking()
                 .FirstOrDefaultAsync(l => l.UserId == userId && l.PostId == postId, cancellationToken);
         }
 
         public async Task<bool> ExistsAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Likes
+                .AsNoTracking()
                 .AnyAsync(l => l.UserId == userId && l.PostId == postId, cancellationToken);
         }
+
     }
 }

@@ -40,13 +40,13 @@ namespace BLL.Services
         public async Task AddBookmarkAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             var exists = await _bookmarkRepo.GetByIdAsync(userId, postId, cancellationToken);
-            if (exists != null) return;
+            if (exists is not null) return;
 
             var bookmark = new Bookmark { UserId = userId, PostId = postId };
             await _bookmarkRepo.AddAsync(bookmark, cancellationToken);
 
             var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
-            if (post != null)
+            if (post is not null)
             {
                 post.BookmarkCount++;
                 await _postRepo.UpdateAsync(post, cancellationToken);
@@ -58,7 +58,7 @@ namespace BLL.Services
             await _bookmarkRepo.DeleteAsync(userId, postId, cancellationToken);
 
             var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
-            if (post != null && post.BookmarkCount > 0)
+            if (post is not null && post.BookmarkCount > 0)
             {
                 post.BookmarkCount--;
                 await _postRepo.UpdateAsync(post, cancellationToken);
@@ -85,7 +85,7 @@ namespace BLL.Services
             var created = await _commentRepo.AddAsync(comment, cancellationToken);
 
             var post = await _postRepo.GetByIdAsync(dto.PostId, cancellationToken);
-            if (post != null)
+            if (post is not null)
             {
                 post.CommentCount++;
                 await _postRepo.UpdateAsync(post, cancellationToken);
@@ -97,14 +97,14 @@ namespace BLL.Services
         public async Task DeleteCommentAsync(Guid commentId, Guid authorId, CancellationToken cancellationToken = default)
         {
             var comment = await _commentRepo.GetByIdAsync(commentId, cancellationToken);
-            if (comment == null) return;
+            if (comment is null) return;
             if (comment.AuthorId != authorId)
                 throw new UnauthorizedAccessException();
 
             await _commentRepo.DeleteAsync(commentId, cancellationToken);
 
             var post = await _postRepo.GetByIdAsync(comment.PostId, cancellationToken);
-            if (post != null && post.CommentCount > 0)
+            if (post is not null && post.CommentCount > 0)
             {
                 post.CommentCount--;
                 await _postRepo.UpdateAsync(post, cancellationToken);
@@ -121,13 +121,13 @@ namespace BLL.Services
         public async Task AddLikeAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             var exists = await _likeRepo.GetByIdAsync(userId, postId, cancellationToken);
-            if (exists != null) return;
+            if (exists is not null) return;
 
             var like = new Like { UserId = userId, PostId = postId };
             await _likeRepo.AddAsync(like, cancellationToken);
 
             var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
-            if (post != null)
+            if (post is not null)
             {
                 post.LikeCount++;
                 await _postRepo.UpdateAsync(post, cancellationToken);
@@ -140,7 +140,7 @@ namespace BLL.Services
             await _likeRepo.DeleteAsync(userId, postId, cancellationToken);
 
             var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
-            if (post != null && post.LikeCount > 0)
+            if (post is not null && post.LikeCount > 0)
             {
                 post.LikeCount--;
                 await _postRepo.UpdateAsync(post, cancellationToken);
@@ -156,7 +156,7 @@ namespace BLL.Services
         public async Task AddRepostAsync(Guid userId, RepostCreateDTO dto, CancellationToken cancellationToken = default)
         {
             var exists = await _repostRepo.GetByIdAsync(userId, dto.PostId, cancellationToken);
-            if (exists != null) return;
+            if (exists is not null) return;
 
             var repost = new Repost
             {
@@ -168,7 +168,7 @@ namespace BLL.Services
             await _repostRepo.AddAsync(repost, cancellationToken);
 
             var post = await _postRepo.GetByIdAsync(dto.PostId, cancellationToken);
-            if (post != null)
+            if (post is not null)
             {
                 post.RepostCount++;
                 await _postRepo.UpdateAsync(post, cancellationToken);
@@ -188,7 +188,7 @@ namespace BLL.Services
                 throw new ArgumentException("Cannot subscribe to yourself");
 
             var exists = await _subscriptionRepo.GetByIdAsync(followerId, followingId, cancellationToken);
-            if (exists != null) return;
+            if (exists is not null) return;
 
             var subscription = new Subscription
             {

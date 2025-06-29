@@ -35,7 +35,7 @@ namespace DAL.Repositories
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var post = await _context.Posts.FindAsync(new object[] { id }, cancellationToken);
-            if (post != null)
+            if (post is not null)
             {
                 _context.Posts.Remove(post);
                 await _context.SaveChangesAsync(cancellationToken);
@@ -45,6 +45,7 @@ namespace DAL.Repositories
         public async Task<Post> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.Posts
+                .AsNoTracking()
                 .Include(p => p.Author)
                 .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
         }
@@ -52,6 +53,7 @@ namespace DAL.Repositories
         public async Task<IEnumerable<Post>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             return await _context.Posts
+                .AsNoTracking()
                 .Where(p => p.AuthorId == userId)
                 .ToListAsync(cancellationToken);
         }
@@ -59,8 +61,10 @@ namespace DAL.Repositories
         public async Task<IEnumerable<Post>> GetByHashtagAsync(string hashtag, CancellationToken cancellationToken = default)
         {
             return await _context.Posts
+                .AsNoTracking()
                 .Where(p => p.Hashtags.Contains(hashtag))
                 .ToListAsync(cancellationToken);
         }
+
     }
 }

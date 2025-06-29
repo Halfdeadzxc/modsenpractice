@@ -28,6 +28,7 @@ namespace DAL.Repositories
         public async Task<IEnumerable<Post>> GetRepostsAsync(Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Reposts
+                .AsNoTracking()
                 .Where(r => r.PostId == postId)
                 .Select(r => r.Post)
                 .ToListAsync(cancellationToken);
@@ -36,13 +37,16 @@ namespace DAL.Repositories
         public async Task<Repost> GetByIdAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Reposts
+                .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.PostId == postId, cancellationToken);
         }
 
         public async Task<bool> ExistsAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Reposts
+                .AsNoTracking()
                 .AnyAsync(r => r.UserId == userId && r.PostId == postId, cancellationToken);
         }
+
     }
 }

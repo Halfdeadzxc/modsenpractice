@@ -28,6 +28,7 @@ namespace DAL.Repositories
         public async Task DeleteAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             var bookmark = await _context.Bookmarks
+                .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.UserId == userId && b.PostId == postId, cancellationToken);
 
             if (bookmark is not null)
@@ -40,6 +41,7 @@ namespace DAL.Repositories
         public async Task<IEnumerable<Post>> GetBookmarksAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             return await _context.Bookmarks
+                .AsNoTracking()
                 .Where(b => b.UserId == userId)
                 .Select(b => b.Post)
                 .ToListAsync(cancellationToken);
@@ -48,13 +50,16 @@ namespace DAL.Repositories
         public async Task<Bookmark> GetByIdAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Bookmarks
+                .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.UserId == userId && b.PostId == postId, cancellationToken);
         }
 
         public async Task<bool> ExistsAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Bookmarks
+                .AsNoTracking()
                 .AnyAsync(b => b.UserId == userId && b.PostId == postId, cancellationToken);
         }
+
     }
 }

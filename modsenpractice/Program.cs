@@ -11,6 +11,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Builder;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using modsenpractice.Middlewares;
 namespace modsenpractice
 {
     public class Program
@@ -92,8 +93,9 @@ namespace modsenpractice
             }
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMiddleware<ExceptionMiddleware>();
 
 
             app.MapControllers();

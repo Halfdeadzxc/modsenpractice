@@ -28,9 +28,10 @@ namespace DAL.Repositories
         public async Task DeleteAsync(Guid followerId, Guid followingId, CancellationToken cancellationToken = default)
         {
             var subscription = await _context.Subscriptions
+                .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.FollowerId == followerId && s.FollowingId == followingId, cancellationToken);
 
-            if (subscription != null)
+            if (subscription is not null)
             {
                 _context.Subscriptions.Remove(subscription);
                 await _context.SaveChangesAsync(cancellationToken);
@@ -40,6 +41,7 @@ namespace DAL.Repositories
         public async Task<IEnumerable<User>> GetFollowersAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             return await _context.Subscriptions
+                .AsNoTracking()
                 .Where(s => s.FollowingId == userId)
                 .Select(s => s.Follower)
                 .ToListAsync(cancellationToken);
@@ -48,6 +50,7 @@ namespace DAL.Repositories
         public async Task<IEnumerable<User>> GetFollowingAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             return await _context.Subscriptions
+                .AsNoTracking()
                 .Where(s => s.FollowerId == userId)
                 .Select(s => s.Following)
                 .ToListAsync(cancellationToken);
@@ -56,7 +59,9 @@ namespace DAL.Repositories
         public async Task<Subscription> GetByIdAsync(Guid followerId, Guid followingId, CancellationToken cancellationToken = default)
         {
             return await _context.Subscriptions
+                .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.FollowerId == followerId && s.FollowingId == followingId, cancellationToken);
         }
+
     }
 }

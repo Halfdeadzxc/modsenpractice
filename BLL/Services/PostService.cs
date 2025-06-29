@@ -36,7 +36,10 @@ namespace BLL.Services
         public async Task<PostDTO> UpdatePostAsync(Guid postId, Guid userId, PostCreateDTO dto, CancellationToken cancellationToken = default)
         {
             var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
-            if (post == null) throw new KeyNotFoundException("Post not found");
+            if (post is null)
+            {
+                throw new KeyNotFoundException("Post not found"); 
+            }
             if (post.AuthorId != userId) throw new UnauthorizedAccessException();
 
             post.Content = dto.Content;
@@ -51,7 +54,7 @@ namespace BLL.Services
         public async Task DeletePostAsync(Guid postId, Guid userId, CancellationToken cancellationToken = default)
         {
             var post = await _postRepo.GetByIdAsync(postId, cancellationToken);
-            if (post == null) return;
+            if (post is null) return;
             if (post.AuthorId != userId) throw new UnauthorizedAccessException();
 
             await _postRepo.DeleteAsync(postId, cancellationToken);

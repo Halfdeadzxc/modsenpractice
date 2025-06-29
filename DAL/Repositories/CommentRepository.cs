@@ -38,6 +38,7 @@ namespace DAL.Repositories
         public async Task<IEnumerable<Comment>> GetCommentsByPostAsync(Guid postId, CancellationToken cancellationToken = default)
         {
             return await _context.Comments
+                .AsNoTracking()
                 .Where(c => c.PostId == postId)
                 .Include(c => c.Author)
                 .ToListAsync(cancellationToken);
@@ -46,9 +47,11 @@ namespace DAL.Repositories
         public async Task<Comment> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.Comments
+                .AsNoTracking()
                 .Include(c => c.Author)
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
+
 
         public async Task<Comment> UpdateAsync(Comment comment, CancellationToken cancellationToken = default)
         {

@@ -26,7 +26,7 @@ namespace BLL.Services
         public async Task UpdateUserProfileAsync(Guid userId, UserUpdateDTO dto, CancellationToken cancellationToken = default)
         {
             var user = await _userRepo.GetByIdAsync(userId, cancellationToken);
-            if (user == null)
+            if (user is null)
                 throw new KeyNotFoundException("User not found");
 
             _mapper.Map(dto, user);

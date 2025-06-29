@@ -37,7 +37,7 @@ namespace BLL.Services
 
         public async Task<TokenResponseDTO> RegisterAsync(RegisterDTO dto, CancellationToken cancellationToken = default)
         {
-            if (await _userRepo.GetByEmailAsync(dto.Email, cancellationToken) != null)
+            if (await _userRepo.GetByEmailAsync(dto.Email, cancellationToken) is not null)
                 throw new ArgumentException("Email already exists");
 
             var user = new User
@@ -55,7 +55,7 @@ namespace BLL.Services
         public async Task<TokenResponseDTO> LoginAsync(LoginDTO dto, CancellationToken cancellationToken = default)
         {
             var user = await _userRepo.GetByEmailAsync(dto.Email, cancellationToken);
-            if (user == null || !_passwordService.VerifyPassword(dto.Password, user.PasswordHash))
+            if (user is null || !_passwordService.VerifyPassword(dto.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid credentials");
 
             return await GenerateTokens(user, cancellationToken);
@@ -64,7 +64,7 @@ namespace BLL.Services
         public async Task<TokenResponseDTO> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
             var user = await _userRepo.GetByRefreshTokenAsync(refreshToken, cancellationToken);
-            if (user == null || user.RefreshTokenExpiry < DateTime.UtcNow)
+            if (user is null || user.RefreshTokenExpiry < DateTime.UtcNow)
                 throw new SecurityTokenException("Invalid refresh token");
 
             return await GenerateTokens(user, cancellationToken);
@@ -73,7 +73,7 @@ namespace BLL.Services
         public async Task ForgotPasswordAsync(ForgotPasswordDTO dto, CancellationToken cancellationToken = default)
         {
             var user = await _userRepo.GetByEmailAsync(dto.Email, cancellationToken);
-            if (user == null) return;
+            if (user is null) return;
 
             user.PasswordResetToken = _jwtService.GenerateResetToken();
             user.ResetTokenExpires = DateTime.UtcNow.AddHours(1);
@@ -89,7 +89,7 @@ namespace BLL.Services
         public async Task ResetPasswordAsync(ResetPasswordDTO dto, CancellationToken cancellationToken = default)
         {
             var user = await _userRepo.GetByEmailAsync(dto.Email, cancellationToken);
-            if (user == null ||
+            if (user is null ||
                 user.PasswordResetToken != dto.Token ||
                 user.ResetTokenExpires < DateTime.UtcNow)
                 throw new ArgumentException("Invalid reset token");

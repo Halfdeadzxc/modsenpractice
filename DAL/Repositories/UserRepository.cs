@@ -28,7 +28,7 @@ namespace DAL.Repositories
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var user = await _context.Users.FindAsync(new object[] { id }, cancellationToken);
-            if (user != null)
+            if (user is not null)
             {
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync(cancellationToken);
@@ -43,6 +43,7 @@ namespace DAL.Repositories
         public async Task<User> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
         {
             return await _context.Users
+                .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
         }
 
@@ -56,7 +57,7 @@ namespace DAL.Repositories
         public async Task<User> UpdatePasswordAsync(Guid userId, string newPasswordHash, CancellationToken cancellationToken = default)
         {
             var user = await _context.Users.FindAsync(new object[] { userId }, cancellationToken);
-            if (user != null)
+            if (user is not null)
             {
                 user.PasswordHash = newPasswordHash;
                 await _context.SaveChangesAsync(cancellationToken);
@@ -67,6 +68,7 @@ namespace DAL.Repositories
         public async Task<User> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
             return await _context.Users
+                .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken, cancellationToken);
         }
     }
