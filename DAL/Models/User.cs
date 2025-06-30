@@ -12,9 +12,12 @@ namespace DAL.Models
         public string Username { get; set; }
         public string Email { get; set; }
         public string PasswordHash { get; set; }
-        public string AvatarUrl { get; set; }
-        public string Bio { get; set; }
-        public bool IsPrivate { get; set; }
+        public string? AvatarUrl { get; set; }
+        public string? Bio { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string? PasswordResetToken { get; set; }
+        public DateTime? ResetTokenExpires { get; set; }
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiry { get; set; }
     }
 }

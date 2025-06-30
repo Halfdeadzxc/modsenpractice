@@ -9,8 +9,10 @@ namespace DAL.Interfaces
 {
     public interface ILikeRepository
     {
-        Task<bool> AddLikeAsync(Guid userId, Guid postId);
-        Task<bool> RemoveLikeAsync(Guid userId, Guid postId);
-        Task<IEnumerable<User>> GetLikesAsync(Guid postId);
+        Task<Like> AddAsync(Like like, CancellationToken cancellationToken = default);
+        Task DeleteAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<User>> GetLikesAsync(Guid postId, CancellationToken cancellationToken = default);
+        Task<Like> GetByIdAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default);
+        Task<bool> ExistsAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default);
     }
 }

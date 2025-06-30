@@ -7,13 +7,10 @@ using System.Threading.Tasks;
 
 namespace DAL.Interfaces
 {
-    public interface IPostRepository
+    public interface IPostRepository : IRepository<Post>
     {
-        Task<Post> CreateAsync(Post post);
-        Task<Post> UpdateAsync(Post post);
-        Task<bool> DeleteAsync(Guid postId);
-        Task<Post> GetByIdAsync(Guid postId);
-        Task<IEnumerable<Post>> GetByUserAsync(Guid userId);
-        Task<IEnumerable<Post>> GetByHashtagAsync(string hashtag);
+        Task<IEnumerable<Post>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Post>> GetByHashtagAsync(string hashtag, CancellationToken cancellationToken = default);
+        
     }
 }

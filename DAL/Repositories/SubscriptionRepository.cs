@@ -18,36 +18,49 @@ namespace DAL.Repositories
             _context = context;
         }
 
-        public async Task<bool> SubscribeAsync(Guid followerId, Guid followingId)
+        public async Task<Subscription> AddAsync(Subscription subscription, CancellationToken cancellationToken = default)
         {
-            var subscription = new Subscription { FollowerId = followerId, FollowingId = followingId, Status = "approved" };
-            _context.Subscriptions.Add(subscription);
-            await _context.SaveChangesAsync();
-            return true;
+            await _context.Subscriptions.AddAsync(subscription, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            return subscription;
         }
 
-        public async Task<bool> UnsubscribeAsync(Guid followerId, Guid followingId)
+        public async Task DeleteAsync(Guid followerId, Guid followingId, CancellationToken cancellationToken = default)
         {
-            var subscription = await _context.Subscriptions.FirstOrDefaultAsync(s => s.FollowerId == followerId && s.FollowingId == followingId);
-            if (subscription == null) return false;
+            var subscription = await _context.Subscriptions
+                .FirstOrDefaultAsync(s => s.FollowerId == followerId && s.FollowingId == followingId, cancellationToken);
 
-            _context.Subscriptions.Remove(subscription);
-            await _context.SaveChangesAsync();
-            return true;
+            if (subscription is not null)
+            {
+                _context.Subscriptions.Remove(subscription);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
         }
 
-        public async Task<IEnumerable<User>> GetFollowersAsync(Guid userId)
+        public async Task<IEnumerable<User>> GetFollowersAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            return await _context.Subscriptions.Where(s => s.FollowingId == userId)
-                                               .Select(s => s.Follower)
-                                               .ToListAsync();
+            return await _context.Subscriptions
+                .AsNoTracking()
+                .Where(s => s.FollowingId == userId)
+                .Select(s => s.Follower)
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<User>> GetFollowingAsync(Guid userId)
+        public async Task<IEnumerable<User>> GetFollowingAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            return await _context.Subscriptions.Where(s => s.FollowerId == userId)
-                                               .Select(s => s.Following)
-                                               .ToListAsync();
+            return await _context.Subscriptions
+                .AsNoTracking()
+                .Where(s => s.FollowerId == userId)
+                .Select(s => s.Following)
+                .ToListAsync(cancellationToken);
         }
+
+        public async Task<Subscription> GetByIdAsync(Guid followerId, Guid followingId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Subscriptions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.FollowerId == followerId && s.FollowingId == followingId, cancellationToken);
+        }
+
     }
 }

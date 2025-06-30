@@ -18,43 +18,53 @@ namespace DAL.Repositories
             _context = context;
         }
 
-        public async Task<Post> CreateAsync(Post post)
+        public async Task<Post> AddAsync(Post post, CancellationToken cancellationToken = default)
         {
-            _context.Posts.Add(post);
-            await _context.SaveChangesAsync();
+            await _context.Posts.AddAsync(post, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
             return post;
         }
 
-        public async Task<Post> UpdateAsync(Post post)
+        public async Task<Post> UpdateAsync(Post post, CancellationToken cancellationToken = default)
         {
             _context.Posts.Update(post);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
             return post;
         }
 
-        public async Task<bool> DeleteAsync(Guid postId)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var post = await _context.Posts.FindAsync(postId);
-            if (post == null) return false;
-
-            _context.Posts.Remove(post);
-            await _context.SaveChangesAsync();
-            return true;
+            var post = await _context.Posts.FindAsync(new object[] { id }, cancellationToken);
+            if (post is not null)
+            {
+                _context.Posts.Remove(post);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
         }
 
-        public async Task<Post> GetByIdAsync(Guid postId)
+        public async Task<Post> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _context.Posts.FindAsync(postId);
+            return await _context.Posts
+                .AsNoTracking()
+                .Include(p => p.Author)
+                .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
         }
 
-        public async Task<IEnumerable<Post>> GetByUserAsync(Guid userId)
+        public async Task<IEnumerable<Post>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            return await _context.Posts.Where(p => p.AuthorId == userId).ToListAsync();
+            return await _context.Posts
+                .AsNoTracking()
+                .Where(p => p.AuthorId == userId)
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<Post>> GetByHashtagAsync(string hashtag)
+        public async Task<IEnumerable<Post>> GetByHashtagAsync(string hashtag, CancellationToken cancellationToken = default)
         {
-            return await _context.Posts.Where(p => p.Hashtags.Contains(hashtag)).ToListAsync();
+            return await _context.Posts
+                .AsNoTracking()
+                .Where(p => p.Hashtags.Contains(hashtag))
+                .ToListAsync(cancellationToken);
         }
+
     }
 }

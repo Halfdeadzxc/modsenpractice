@@ -18,29 +18,47 @@ namespace DAL.Repositories
             _context = context;
         }
 
-        public async Task<bool> AddLikeAsync(Guid userId, Guid postId)
+        public async Task<Like> AddAsync(Like like, CancellationToken cancellationToken = default)
         {
-            var like = new Like { UserId = userId, PostId = postId };
-            _context.Likes.Add(like);
-            await _context.SaveChangesAsync();
-            return true;
+            await _context.Likes.AddAsync(like, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            return like;
         }
 
-        public async Task<bool> RemoveLikeAsync(Guid userId, Guid postId)
+        public async Task DeleteAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
         {
-            var like = await _context.Likes.FirstOrDefaultAsync(l => l.UserId == userId && l.PostId == postId);
-            if (like == null) return false;
+            var like = await _context.Likes
+                .FirstOrDefaultAsync(l => l.UserId == userId && l.PostId == postId, cancellationToken);
 
-            _context.Likes.Remove(like);
-            await _context.SaveChangesAsync();
-            return true;
+            if (like is not null)
+            {
+                _context.Likes.Remove(like);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
         }
 
-        public async Task<IEnumerable<User>> GetLikesAsync(Guid postId)
+        public async Task<IEnumerable<User>> GetLikesAsync(Guid postId, CancellationToken cancellationToken = default)
         {
-            return await _context.Likes.Where(l => l.PostId == postId)
-                                       .Select(l => l.User)
-                                       .ToListAsync();
+            return await _context.Likes
+                .AsNoTracking()
+                .Where(l => l.PostId == postId)
+                .Select(l => l.User)
+                .ToListAsync(cancellationToken);
         }
+
+        public async Task<Like> GetByIdAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Likes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(l => l.UserId == userId && l.PostId == postId, cancellationToken);
+        }
+
+        public async Task<bool> ExistsAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Likes
+                .AsNoTracking()
+                .AnyAsync(l => l.UserId == userId && l.PostId == postId, cancellationToken);
+        }
+
     }
 }

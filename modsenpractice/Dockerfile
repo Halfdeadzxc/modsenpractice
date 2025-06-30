@@ -13,6 +13,8 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["modsenpractice/modsenpractice.csproj", "modsenpractice/"]
+COPY ["BLL/BLL.csproj", "BLL/"]
+COPY ["DAL/DAL.csproj", "DAL/"]
 RUN dotnet restore "./modsenpractice/modsenpractice.csproj"
 COPY . .
 WORKDIR "/src/modsenpractice"

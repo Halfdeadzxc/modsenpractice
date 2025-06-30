@@ -9,9 +9,10 @@ namespace DAL.Interfaces
 {
     public interface ISubscriptionRepository
     {
-        Task<bool> SubscribeAsync(Guid followerId, Guid followingId);
-        Task<bool> UnsubscribeAsync(Guid followerId, Guid followingId);
-        Task<IEnumerable<User>> GetFollowersAsync(Guid userId);
-        Task<IEnumerable<User>> GetFollowingAsync(Guid userId);
+        Task<Subscription> AddAsync(Subscription subscription, CancellationToken cancellationToken = default);
+        Task DeleteAsync(Guid followerId, Guid followingId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<User>> GetFollowersAsync(Guid userId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<User>> GetFollowingAsync(Guid userId, CancellationToken cancellationToken = default);
+        Task<Subscription> GetByIdAsync(Guid followerId, Guid followingId, CancellationToken cancellationToken = default);
     }
 }

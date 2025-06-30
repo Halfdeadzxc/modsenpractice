@@ -18,19 +18,35 @@ namespace DAL.Repositories
             _context = context;
         }
 
-        public async Task<bool> AddRepostAsync(Guid userId, Guid postId, string comment)
+        public async Task<Repost> AddAsync(Repost repost, CancellationToken cancellationToken = default)
         {
-            var repost = new Repost { UserId = userId, PostId = postId, Comment = comment };
-            _context.Reposts.Add(repost);
-            await _context.SaveChangesAsync();
-            return true;
+            await _context.Reposts.AddAsync(repost, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            return repost;
         }
 
-        public async Task<IEnumerable<Post>> GetRepostsAsync(Guid postId)
+        public async Task<IEnumerable<Post>> GetRepostsAsync(Guid postId, CancellationToken cancellationToken = default)
         {
-            return await _context.Reposts.Where(r => r.PostId == postId)
-                                         .Select(r => r.Post)
-                                         .ToListAsync();
+            return await _context.Reposts
+                .AsNoTracking()
+                .Where(r => r.PostId == postId)
+                .Select(r => r.Post)
+                .ToListAsync(cancellationToken);
         }
+
+        public async Task<Repost> GetByIdAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Reposts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.UserId == userId && r.PostId == postId, cancellationToken);
+        }
+
+        public async Task<bool> ExistsAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Reposts
+                .AsNoTracking()
+                .AnyAsync(r => r.UserId == userId && r.PostId == postId, cancellationToken);
+        }
+
     }
 }
