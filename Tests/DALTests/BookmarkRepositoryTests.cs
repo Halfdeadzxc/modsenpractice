@@ -8,17 +8,6 @@ using Xunit;
 using System.Linq;
 using DAL;
 
-namespace Tests.DALTests
-{
-    using DAL.Models;
-    using DAL.Repositories;
-    using Microsoft.EntityFrameworkCore;
-    using System;
-    using System.Threading.Tasks;
-    using Xunit;
-    using System.Linq;
-    using DAL;
-
     namespace Tests.DALTests
     {
         public class BookmarkRepositoryTests
@@ -134,4 +123,3 @@ namespace Tests.DALTests
         }
     }
 
-}
